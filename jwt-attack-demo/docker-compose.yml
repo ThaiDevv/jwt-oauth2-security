@@ -1,0 +1,47 @@
+services:
+
+  server-secure:
+    build:
+      context: ./server-secure
+      dockerfile: Dockerfile
+    container_name: attt-server-secure
+    ports:
+      - "4001:4001"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:4001/api/public-key"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  server-vulnerable:
+    build:
+      context: ./server-vulnerable
+      dockerfile: Dockerfile
+    container_name: attt-server-vulnerable
+    ports:
+      - "4002:4002"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:4002/api/public-key"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  oauth-server:
+    build:
+      context: ./oauth-server
+      dockerfile: Dockerfile
+    container_name: attt-oauth-server
+    ports:
+      - "4003:4003"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:4003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
