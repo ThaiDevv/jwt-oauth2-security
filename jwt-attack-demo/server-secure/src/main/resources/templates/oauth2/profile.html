@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>✅ Profile — SECURE Server (Port 4001)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a; --surface: #1e293b; --surface2: #243447;
+      --border: #334155; --text: #f1f5f9; --text2: #94a3b8; --text3: #64748b;
+      --red: #ef4444; --red-dim: rgba(239,68,68,0.15); --red-border: rgba(239,68,68,0.3);
+      --green: #22c55e; --green-dim: rgba(34,197,94,0.12); --green-border: rgba(34,197,94,0.3);
+      --blue: #3b82f6; --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; padding: 24px;
+    }
+    .container { max-width: 720px; margin: 0 auto; }
+
+    /* Banner */
+    .banner {
+      padding: 10px 16px; border-radius: 8px; font-size: 12px;
+      font-weight: 600; text-align: center; margin-bottom: 20px;
+      background: var(--green-dim); border: 1px solid var(--green-border); color: var(--green);
+    }
+
+    /* Card */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 28px; margin-bottom: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+    .card-title { font-size: 13px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+
+    /* Profile */
+    .profile-header { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+    .avatar-wrap { position: relative; }
+    .avatar { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--green-border); object-fit: cover; }
+    .avatar-placeholder {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; font-weight: 800; color: white;
+      border: 3px solid var(--green-border);
+    }
+    .secure-badge {
+      position: absolute; bottom: -2px; right: -2px;
+      background: var(--green); color: white; border-radius: 50%;
+      width: 22px; height: 22px; display: flex; align-items: center;
+      justify-content: center; font-size: 11px;
+    }
+    .profile-name { font-size: 22px; font-weight: 800; }
+    .profile-email { font-size: 14px; color: var(--text2); margin-top: 4px; }
+    .profile-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .badge { font-size: 11px; padding: 3px 10px; border-radius: 99px; font-weight: 600; }
+    .badge-green { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
+    .badge-gray { background: var(--surface2); color: var(--text2); }
+
+    /* Info Grid */
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .info-item { padding: 14px 16px; background: var(--surface2); border-radius: 8px; }
+    .info-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .info-value { font-family: 'Fira Code', monospace; font-size: 13px; word-break: break-all; }
+
+    /* Success box */
+    .success-box {
+      padding: 16px; border-radius: 8px; font-size: 12px; line-height: 1.8;
+      background: var(--green-dim); border: 1px solid var(--green-border);
+      color: #86efac; font-family: 'Fira Code', monospace;
+    }
+    .success-box .slabel {
+      font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+      color: var(--green); display: block; margin-bottom: 8px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 18px; border-radius: 8px; font-size: 13px;
+      font-weight: 600; cursor: pointer; border: none; text-decoration: none;
+      transition: all 0.2s; margin: 4px;
+    }
+    .btn-green { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
+    .btn-green:hover { background: rgba(34,197,94,0.25); }
+    .btn-outline { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+    .btn-outline:hover { background: var(--surface2); }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="banner">✅ SERVER SECURE — PORT 4001 — OAuth Login CSRF Prevention — State đã được validate!</div>
+
+    <!-- Profile Header -->
+    <div class="card">
+      <div class="card-title">👤 Thông Tin Người Dùng (OAuth2 Google)</div>
+      <div class="profile-header">
+        <div class="avatar-wrap">
+          <img th:if="${picture}" th:src="${picture}" class="avatar" alt="Avatar">
+          <div th:unless="${picture}" class="avatar-placeholder">
+            <span th:text="${name != null ? name.substring(0,1).toUpperCase() : 'G'}"></span>
+          </div>
+          <div class="secure-badge">✅</div>
+        </div>
+        <div>
+          <div class="profile-name" th:text="${name ?: 'Người dùng Google'}"></div>
+          <div class="profile-email" th:text="${email}"></div>
+          <div class="profile-meta">
+            <span class="badge badge-green">SECURE SERVER</span>
+            <span class="badge badge-gray">Port 4001</span>
+            <span class="badge badge-gray" th:text="${'via ' + loginVia}"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Info -->
+    <div class="card">
+      <div class="card-title">📋 Chi Tiết Tài Khoản</div>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">Email</div>
+          <div class="info-value" th:text="${email}"></div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Google ID (sub)</div>
+          <div class="info-value" th:text="${googleId}"></div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Tên đầy đủ</div>
+          <div class="info-value" th:text="${name}"></div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Avatar URL</div>
+          <div class="info-value" style="font-size:11px" th:text="${picture ?: '(không có)'}"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Security Success Info -->
+    <div class="card">
+      <div class="card-title">🔒 State Validation Thành Công</div>
+      <div class="success-box">
+        <span class="slabel">✅ OAuth Login CSRF — PROTECTED</span>
+        Bạn đăng nhập thành công vì state trong callback KHỚP với state trong session.<br><br>
+        Cơ chế bảo vệ:<br>
+        1. Server sinh state = SecureRandom(16 bytes) → Base64URL<br>
+        2. Lưu state vào HttpSession (server-side, không lộ ra client)<br>
+        3. Callback: so sánh state → nếu sai → HTTP 400 "Invalid OAuth State"<br>
+        4. Attacker không biết state của session bạn → CSRF bị ngăn chặn!<br><br>
+        Thử demo: Mở Burp Suite → Chặn callback → Xóa/sửa state → 400 REJECTED!
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="card">
+      <div class="actions">
+        <a href="/oauth2/logout" class="btn btn-green">🚪 Đăng Xuất</a>
+        <a href="http://localhost:4002/oauth2/login" class="btn btn-outline" target="_blank">⚠️ Xem Vulnerable Server (4002) →</a>
+        <a href="http://localhost:3000" class="btn btn-outline" target="_blank">🖥️ Client App (3000) →</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

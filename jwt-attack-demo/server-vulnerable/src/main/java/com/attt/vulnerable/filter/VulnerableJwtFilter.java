@@ -128,7 +128,6 @@ public class VulnerableJwtFilter extends OncePerRequestFilter {
                 return buildClaimsFromMap(payload);
 
             default:
-                // RS256, RS384, RS512... → verify bằng RSA public key (bình thường)
                 log.info("[JWT-LIB] RSA algorithm → standard RSA verification");
                 return Jwts.parserBuilder()
                         .setSigningKey(rsaKeyConfig.getPublicKey())

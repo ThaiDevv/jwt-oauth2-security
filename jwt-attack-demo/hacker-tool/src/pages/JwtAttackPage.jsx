@@ -47,6 +47,8 @@ export default function JwtAttackPage() {
   const [forgedToken, setForgedToken] = useState('')
   const [forging, setForging] = useState(false)
 
+
+
   const [logs, setLogs] = useState([makeLog('Hacker Tool khởi động — CVE-2015-9235 Demo', 'info')])
   const addLog = (msg, type) => setLogs(l => [...l.slice(-99), makeLog(msg, type)])
 
@@ -92,12 +94,15 @@ export default function JwtAttackPage() {
       addLog(`Token forged! alg=HS256 | sub=${payloadObj.sub || 'unknown'} | role=${payloadObj.role || 'none'}`, 'success')
       addLog(`   Header:  ${JSON.stringify(decoded2?.header)}`, 'warning')
       addLog(`   Payload: ${JSON.stringify(decoded2?.payload)}`, 'warning')
+      addLog('✅ Token giả đã tạo xong! Tiếp tục Bước 4 để gửi đến server.', 'success')
     } catch (e) {
       addLog(`Forge error: ${e.message}`, 'error')
     } finally {
       setForging(false)
     }
   }
+
+
 
   return (
     <div>
@@ -143,6 +148,10 @@ export default function JwtAttackPage() {
                 }}
               />
             </div>
+            <p style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>
+              Lấy từ: <code style={{ color: '#f59e0b' }}>GET http://localhost:4002/api/public-key</code>
+              {' '}→ trường <code style={{ color: '#3b82f6' }}>publicKey</code>
+            </p>
           </div>
 
           {/* Bước 2 */}
@@ -170,7 +179,7 @@ export default function JwtAttackPage() {
           <div className="card">
             <div className="step-header">
               <div className={`step-num ${forgedToken ? 'done' : ''}`}>3</div>
-              <div className="step-title">Cấu hình & Tạo Token Giả (Forge)</div>
+              <div className="step-title">Cấu hình &amp; Tạo Token Giả (Forge)</div>
               {forgedToken && <span className="badge badge-warning">Forged</span>}
             </div>
 
@@ -195,8 +204,8 @@ export default function JwtAttackPage() {
             <p style={{ fontSize: 12, color: '#94a3b8', marginBottom: 12 }}>
               Token mới sẽ có <code style={{ color: '#f59e0b' }}>alg=HS256</code> và chữ ký được ký bằng HMAC-SHA256 dùng public key PEM làm secret.
             </p>
-            <button className="btn btn-danger" onClick={forgeToken} disabled={!publicKey}>
-              Forge HS256 Token
+            <button className="btn btn-danger" onClick={forgeToken} disabled={!publicKey || forging}>
+              {forging ? <div className="spinner" /> : 'Forge HS256 Token'}
             </button>
             {forgedToken && (
               <div className="code-box danger" style={{ marginTop: 12, fontSize: 10 }}>
@@ -205,6 +214,8 @@ export default function JwtAttackPage() {
               </div>
             )}
           </div>
+
+
         </div>
 
         {/* Attack Log Panel */}
@@ -228,6 +239,13 @@ export default function JwtAttackPage() {
                 Server vulnerable dùng <code style={{ color: '#f59e0b' }}>jwt.verify(token, publicKey)</code> không có
                 algorithm whitelist → khi token có alg=HS256, publicKey được dùng như HMAC secret.
                 Vì publicKey là công khai, attacker có thể ký token giả với bất kỳ payload nào.
+              </div>
+            </div>
+            <div style={{ marginTop: 10, padding: 12, background: '#060e1a', borderRadius: 7, fontSize: 12 }}>
+              <div style={{ fontWeight: 700, color: '#22c55e', marginBottom: 8 }}>Cách Phòng Chống</div>
+              <div style={{ color: '#94a3b8', lineHeight: 1.6 }}>
+                Server secure kiểm tra <code style={{ color: '#22c55e' }}>alg</code> trong JWT header thủ công TRƯỚC
+                khi verify — từ chối ngay nếu không phải RS256. Attacker không thể bypass bằng alg=HS256.
               </div>
             </div>
           </div>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${csrfDetected != null and csrfDetected} ? '🚫 CSRF Detected!' : '❌ OAuth2 Error'">OAuth2 Error</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a; --surface: #1e293b; --surface2: #243447;
+      --border: #334155; --text: #f1f5f9; --text2: #94a3b8; --text3: #64748b;
+      --red: #ef4444; --red-dim: rgba(239,68,68,0.15); --red-border: rgba(239,68,68,0.3);
+      --green: #22c55e; --green-dim: rgba(34,197,94,0.12); --green-border: rgba(34,197,94,0.3);
+      --orange: #f97316; --orange-dim: rgba(249,115,22,0.12); --orange-border: rgba(249,115,22,0.3);
+      --blue: #3b82f6; --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 24px;
+    }
+    .card {
+      width: 100%; max-width: 520px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 36px 32px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4); text-align: center;
+    }
+    .icon { font-size: 56px; margin-bottom: 16px; display: block; }
+    .title { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+    .subtitle { font-size: 14px; color: var(--text2); margin-bottom: 24px; line-height: 1.6; }
+
+    /* CSRF specific */
+    .csrf-box {
+      background: var(--orange-dim); border: 1px solid var(--orange-border);
+      border-radius: 8px; padding: 20px; text-align: left; margin: 20px 0;
+    }
+    .csrf-box .label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+      color: var(--orange); margin-bottom: 12px; display: block;
+    }
+    .state-compare {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;
+    }
+    .state-item {
+      padding: 10px 12px; border-radius: 6px; font-family: 'Fira Code', monospace; font-size: 12px;
+    }
+    .state-item.callback { background: var(--red-dim); border: 1px solid var(--red-border); }
+    .state-item.session  { background: var(--green-dim); border: 1px solid var(--green-border); }
+    .state-item .slabel  { font-size: 10px; color: var(--text3); text-transform: uppercase; margin-bottom: 4px; }
+    .state-item .svalue  { color: var(--text); word-break: break-all; }
+
+    /* Error box */
+    .error-box {
+      background: var(--red-dim); border: 1px solid var(--red-border);
+      border-radius: 8px; padding: 14px 16px; font-size: 13px;
+      color: #fca5a5; text-align: left; margin: 16px 0;
+    }
+
+    .explain {
+      margin-top: 16px; padding: 14px 16px; border-radius: 8px;
+      background: var(--surface2); font-size: 12px; line-height: 1.8;
+      color: var(--text2); text-align: left;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 20px; border-radius: 8px; font-size: 13px;
+      font-weight: 600; cursor: pointer; border: none; text-decoration: none;
+      transition: all 0.2s; margin: 4px;
+    }
+    .btn-primary { background: var(--blue); color: white; }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-outline { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+    .btn-outline:hover { background: var(--surface2); }
+  </style>
+</head>
+<body>
+  <div class="card">
+
+    <!-- CSRF Detected! -->
+    <div th:if="${csrfDetected}">
+      <span class="icon">🛡️</span>
+      <div class="title" style="color: #f97316">CSRF Attack Detected!</div>
+      <div class="subtitle">
+        <strong>Server SECURE</strong> đã phát hiện và chặn thành công tấn công OAuth Login CSRF.<br>
+        State không khớp với session → Yêu cầu bị từ chối.
+      </div>
+
+      <div class="csrf-box">
+        <span class="label">🔍 State Comparison — Lý Do Từ Chối</span>
+        <div class="error-box" th:text="${error}"></div>
+        <div class="state-compare">
+          <div class="state-item callback">
+            <div class="slabel">❌ Callback State</div>
+            <div class="svalue" th:text="${callbackState}"></div>
+          </div>
+          <div class="state-item session">
+            <div class="slabel">✅ Session State</div>
+            <div class="svalue" th:text="${sessionState}"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="explain">
+        Tại sao CSRF bị ngăn chặn?<br>
+        → Mỗi OAuth flow tạo state ngẫu nhiên → lưu server-side (session)<br>
+        → Attacker không biết state của session Victim<br>
+        → Link callback của Attacker có state sai → REJECTED ✅<br>
+        → HTTP 400: "Invalid OAuth State"
+      </div>
+    </div>
+
+    <!-- Generic Error -->
+    <div th:unless="${csrfDetected}">
+      <span class="icon">❌</span>
+      <div class="title">Xác Thực Thất Bại</div>
+      <div class="subtitle">Đã xảy ra lỗi trong quá trình OAuth2.</div>
+      <div class="error-box" th:text="${error}"></div>
+    </div>
+
+    <div style="margin-top: 20px;">
+      <a th:href="'/oauth2/login'" class="btn btn-primary">← Thử Lại</a>
+      <a href="http://localhost:4002/oauth2/login" class="btn btn-outline">⚠️ Xem Vulnerable (4002)</a>
+    </div>
+  </div>
+</body>
+</html>

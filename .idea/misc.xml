@@ -6,6 +6,7 @@
       <list>
         <option value="$PROJECT_DIR$/backend/pom.xml" />
         <option value="$PROJECT_DIR$/backend-vulnerable/pom.xml" />
+        <option value="$PROJECT_DIR$/jwt-attack-demo/server-secure/pom.xml" />
       </list>
     </option>
   </component>

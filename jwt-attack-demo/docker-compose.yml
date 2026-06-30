@@ -32,16 +32,13 @@ services:
       retries: 5
       start_period: 60s
 
-  oauth-server:
+  server-no-auth:
     build:
-      context: ./oauth-server
+      context: ./server-no-auth
       dockerfile: Dockerfile
-    container_name: attt-oauth-server
+    container_name: attt-server-no-auth
     ports:
-      - "4003:4003"
-    healthcheck:
-      test: ["CMD", "wget", "-q", "-O-", "http://localhost:4003/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
+      - "4000:4000"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
